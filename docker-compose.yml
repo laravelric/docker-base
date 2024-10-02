@@ -1,0 +1,41 @@
+services:
+  # Project
+  app:
+    container_name: "${APP_NAME}_app"
+    environment:
+      APP_NAME: ${APP_NAME}
+      HOST_IP: ${HOST_IP}
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        user: ${USER_NAME}
+        uid: ${USER_UID}
+    restart: unless-stopped
+    working_dir: /var/www/
+    ports:
+      - "${VITE_PORT}:${VITE_PORT}"
+      - "9003:9003"
+    volumes:
+      - .:/var/www
+    networks:
+      - laravel
+
+  # Nginx
+  nginx:
+    container_name: "${APP_NAME}_nginx"
+    environment:
+      APP_NAME: ${APP_NAME}
+    image: nginx:alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./:/var/www
+      - ./docker/nginx/:/etc/nginx/conf.d/
+    networks:
+      - laravel
+
+networks:
+  laravel:
+    driver: bridge
